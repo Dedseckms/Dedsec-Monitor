@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Dedsec.Core/Dedsec.Core.csproj" />
+    <Project Path="src/Dedsec.Monitor/Dedsec.Monitor.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Dedsec.Tests/Dedsec.Tests.csproj" />
+  </Folder>
+</Solution>

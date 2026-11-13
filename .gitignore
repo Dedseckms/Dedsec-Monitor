@@ -1,0 +1,11 @@
+.tools/
+**/bin/
+**/obj/
+artifacts/
+vendor/*.exe
+vendor/*.zip
+*.user
+.vs/
+.env
+TestResults/
+docs/screenshots/diagnostics.json
