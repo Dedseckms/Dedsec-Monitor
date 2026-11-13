@@ -1,4 +1,4 @@
-param([string]$BuildLabel = '1.0.1-preview')
+param([string]$BuildLabel = '1.0.2-preview', [switch]$PrepareComponents)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $existing = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{D17C8746-C637-4EA0-935E-E61BC1C33C04}_is1' -ErrorAction SilentlyContinue
@@ -7,7 +7,9 @@ $qa = Join-Path $root ('artifacts/qa/install-' + [Guid]::NewGuid().ToString('N')
 New-Item -ItemType Directory -Force $qa | Out-Null
 $installPath = Join-Path $qa 'app'
 $setup = Join-Path $root "artifacts/Dedsec-Monitor-$BuildLabel-Setup-x64.exe"
-$installer = Start-Process $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CURRENTUSER',('/DIR="' + $installPath + '"'),('/LOG="' + (Join-Path $qa 'setup.log') + '"')) -PassThru -WindowStyle Hidden
+$setupArguments = @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CURRENTUSER',('/DIR="' + $installPath + '"'),('/LOG="' + (Join-Path $qa 'setup.log') + '"'))
+if (-not $PrepareComponents) { $setupArguments += '/QA_SKIPCOMPONENTS=1' }
+$installer = Start-Process $setup -ArgumentList $setupArguments -PassThru -WindowStyle Hidden
 if (-not $installer.WaitForExit(60000)) { throw 'Installer timed out.' }
 if ($installer.ExitCode -ne 0) { throw "Installer exit code: $($installer.ExitCode)" }
 $exe = Join-Path $installPath 'Dedsec.Monitor.exe'
@@ -24,6 +26,7 @@ for ($attempt = 0; $attempt -lt 20 -and (Test-Path $exe); $attempt++) { Start-Sl
 if (Test-Path $exe) { throw 'Uninstall left the installed application executable behind.' }
 [pscustomobject]@{
     Installed = $true
+    SharedComponentsSkippedForPackagingTest = -not $PrepareComponents
     LaunchedSelfContained = $true
     SensorCount = $diagnostics.SensorCount
     SessionSamples = $diagnostics.RecordedSamples

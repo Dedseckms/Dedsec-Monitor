@@ -41,18 +41,27 @@ internal sealed class HardwareService : IDisposable
                 .ThenByDescending(h => Find(h, SensorType.Load, "GPU Core") ?? 0).FirstOrDefault();
         var memory = new Native.MemoryStatus { Length = (uint)Marshal.SizeOf<Native.MemoryStatus>() };
         var memoryOk = Native.GlobalMemoryStatusEx(ref memory);
-        var cpuClock = cpu?.Sensors.Where(s => s.SensorType == SensorType.Clock && s.Name.StartsWith("CPU Core", StringComparison.OrdinalIgnoreCase))
-            .Select(s => (double?)s.Value).Where(v => v > 0).ToArray();
+        var cpuClock = AverageCoreClock(cpu?.Sensors.Where(s => s.SensorType == SensorType.Clock).Select(s => (s.Name, s.Value)) ?? []);
         return new(DateTimeOffset.Now, cpu?.Name ?? System.Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER") ?? "CPU",
             gpu?.Name ?? "GPU", Find(cpu, SensorType.Load, "CPU Total") ?? CpuFallback(),
             Find(cpu, SensorType.Temperature, "CPU Package", "Core (Tctl/Tdie)", "Core (Tdie)")
                 ?? Max(cpu, SensorType.Temperature),
-            cpuClock is { Length: > 0 } ? cpuClock.Average() : null,
+            cpuClock,
             Find(gpu, SensorType.Load, "GPU Core", "D3D 3D"), Find(gpu, SensorType.Temperature, "GPU Core"),
             Find(gpu, SensorType.Clock, "GPU Core"), Find(gpu, SensorType.SmallData, "GPU Memory Used"),
             Find(gpu, SensorType.SmallData, "GPU Memory Total"), Find(gpu, SensorType.Power, "GPU Package", "GPU Board"),
             memoryOk ? (memory.TotalPhysical - memory.AvailablePhysical) / 1073741824d : 0,
             memoryOk ? memory.TotalPhysical / 1073741824d : 0, frames, sensors, _error);
+    }
+
+    internal static double? AverageCoreClock(IEnumerable<(string Name, float? Value)> clocks)
+    {
+        var values = clocks.Where(c => c.Name.StartsWith("CPU Core", StringComparison.OrdinalIgnoreCase) ||
+            c.Name.StartsWith("Core #", StringComparison.OrdinalIgnoreCase) ||
+            c.Name.StartsWith("P-Core #", StringComparison.OrdinalIgnoreCase) ||
+            c.Name.StartsWith("E-Core #", StringComparison.OrdinalIgnoreCase))
+            .Where(c => c.Value is > 0 && float.IsFinite(c.Value.Value)).Select(c => (double)c.Value!.Value).ToArray();
+        return values.Length > 0 ? values.Average() : null;
     }
 
     private double? CpuFallback()

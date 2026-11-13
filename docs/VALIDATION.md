@@ -1,14 +1,18 @@
 # Validation
 
-## 1.0.1-preview — waiting for owner testing
+## 1.0.2-preview — waiting for owner testing
 
 The release remains an unpublished draft. CI release publication is disabled.
 
-- 31 automated tests passed: 27 core tests and four Windows integration tests. New coverage includes actual shared-memory slot ownership and lock handling, mocked stable-release download/caching, checksum failures, ZIP traversal/reserved names and transactional rollback preserving unrelated files.
+- 40 automated tests passed: 27 core tests and 13 Windows integration tests. Coverage includes actual shared-memory slot ownership and lock handling, mocked stable-release download/caching, checksum failures, ZIP traversal/reserved names, transactional rollback, automatic component provisioning and Intel hybrid-core clock selection.
 - PresentMon alone produced no FPS for the separate OpenGL workload on the local Intel GPU. With RTSS, Dedsec Monitor read nonzero FPS from the same kind of workload, reported source `RTSS`, and rendered its OSD into the OpenGL framebuffer. The captured framebuffer is a real image, not a generated mockup.
 - The custom frame's minimize/maximize/restore checks passed. The initial window remained inside the work area. Dragging is implemented on the visible caption; physical mouse dragging still needs owner feedback.
-- The optional RTSS server was installed locally from its signed official distribution for this test. It is not included in our installation package.
-- The packaged preview installed, launched as a self-contained application, recorded samples, controlled its OSD and uninstalled successfully from a disposable directory.
+- The RTSS server was installed locally from its signed official distribution for the OpenGL test. It is not redistributed in our installation package. The new automatic production downloader was separately exercised against the actual official mirror: archive and executable hashes passed. Tests exercise automatic installer selection/arguments, registration checks, failures and reboot handling with fixtures; they do not replace a fresh-machine end-to-end installation test.
+- The production `--prepare-components` flow installed the previously missing PawnIO 2.2.0 silently and returned success. A subsequent self-contained smoke run enumerated 106 sensors and read real CPU package temperature and hybrid-core clocks (about 67 °C and 1977 MHz at the final sample). RTSS was already installed during this run; a fresh-machine test of both installers together remains outstanding.
+- The installer welcome, license and cancellation dialog were visually inspected in the compiled preview and displayed dark backgrounds. The final installer additionally forces styled title bars. Further UI automation was stopped when the owner pressed Escape.
+- The owner has the earlier preview running concurrently. Its registered hotkeys prevent the isolated screenshot process from registering the same shortcuts; the screenshot process correctly reports the conflict. This is not a fresh single-instance hotkey validation.
+- The disposable packaging smoke test explicitly skips shared component installation (`QA_SKIPCOMPONENTS=1`); it verifies app installation, self-contained launch, sampling/OSD and uninstall. Normal setup automatically prepares missing shared components. A fresh Windows VM with no RTSS/PawnIO is still needed to verify both prerequisite installers and their UAC prompts together.
+- The final 1.0.2-preview setup was additionally tested with `scripts/test-installer.ps1 -PrepareComponents`, without the QA opt-out. Its component-preparation child returned success with RTSS/PawnIO already present; the installed app enumerated 106 sensors, recorded eight samples, showed/hid the OSD and uninstalled successfully.
 - The actual bundled updater executed a windowless fixture successfully with a startup acknowledgment; a second run without acknowledgment restored old files and relaunched the previous fixture. No GitHub release was published for either test. `scripts/test-updater.ps1` reproduces both paths.
 - Minecraft itself, protected games and a true exclusive fullscreen game still need the owner's manual test. No universal compatibility is claimed.
 

@@ -314,8 +314,7 @@ internal sealed class MainWindow : Window
             Array.IndexOf(new[] { "Auto", "Desktop", "Rtss" }, settings.OverlayBackend), i => settings.OverlayBackend = new[] { "Auto", "Desktop", "Rtss" }[i])));
         controls.Children.Add(Value("rtssStatus", 11, Ui.Acid));
         controls.Children.Add(Ui.Text(L.T("rtssHint"), 12, Ui.Muted)); Ui.Gap(controls, 10);
-        controls.Children.Add(Ui.Row(Ui.Action(L.T("rtssDownload"), () => App.OpenPath(RtssService.OfficialDownload)),
-            Ui.Action(L.T("rtssSelect"), _app.ChooseRtss)));
+        controls.Children.Add(Ui.Action(L.T("componentRepair"), _app.PrepareComponents));
         Ui.Gap(controls, 20); controls.Children.Add(Ui.Mono(L.T("metrics"), 10, Ui.Muted));
         var toggles = Ui.Columns(1, 1);
         Ui.Cell(toggles, Ui.Stack(Toggle("fps", settings.ShowFps, v => settings.ShowFps = v),
@@ -460,7 +459,7 @@ internal sealed class MainWindow : Window
         var driver = Ui.Stack(Ui.Mono(L.T("driver"), 10, Ui.Muted)); Ui.Gap(driver, 16);
         driver.Children.Add(Ui.Badge(L.T(_app.DriverInstalled ? "driverReady" : "driverMissing"), _app.DriverInstalled)); Ui.Gap(driver, 14);
         driver.Children.Add(Ui.Text(L.T("driverBody"), 12, Ui.Muted)); Ui.Gap(driver, 18);
-        driver.Children.Add(Ui.Action(L.T("installDriver"), _app.InstallDriver, !_app.DriverInstalled));
+        driver.Children.Add(Ui.Action(L.T("componentRepair"), _app.PrepareComponents, !_app.DriverInstalled));
         right.Children.Add(Ui.Card(driver)); Ui.Gap(right, 18);
         var access = Ui.Stack(Ui.Mono(L.T("access"), 10, Ui.Muted)); Ui.Gap(access, 18);
         access.Children.Add(Ui.Badge(L.T(_app.Elevated ? "admin" : "standard"), _app.Elevated)); Ui.Gap(access, 18);

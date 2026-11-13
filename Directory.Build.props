@@ -4,8 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Deterministic>true</Deterministic>
-    <Version>1.0.1</Version>
-    <InformationalVersion>1.0.1-preview</InformationalVersion>
+    <Version>1.0.2</Version>
+    <InformationalVersion>1.0.2-preview</InformationalVersion>
     <Authors>Dedseckms</Authors>
     <RepositoryUrl>https://github.com/Dedseckms/Dedsec-Monitor</RepositoryUrl>
   </PropertyGroup>

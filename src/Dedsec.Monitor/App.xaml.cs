@@ -11,7 +11,7 @@ namespace Dedsec.Monitor;
 
 public partial class App : Application
 {
-    internal static string ProductVersion => typeof(App).Assembly.GetName().Version?.ToString(3) ?? "1.0.1";
+    internal static string ProductVersion => typeof(App).Assembly.GetName().Version?.ToString(3) ?? "1.0.2";
     public static string DataDirectory { get; private set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Dedsec", "Monitor");
     public static string SessionsDirectory => Path.Combine(DataDirectory, "Sessions");
     public Settings Settings { get; private set; } = new();
@@ -36,11 +36,20 @@ public partial class App : Application
     private System.Windows.Forms.NotifyIcon? _tray;
     internal bool Exiting { get; private set; }
     private MainWindow _main = null!;
+    private ComponentSetupWindow? _componentSetup;
     private static readonly object LogGate = new();
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        if (e.Args.Contains("--prepare-components"))
+        {
+            L.Language = e.Args.Contains("--english") ? "en" : "ru";
+            var setup = new ComponentSetupWindow(e.Args.Contains("--silent-components"));
+            MainWindow = setup;
+            setup.Closed += (_, _) => Shutdown(setup.Prepared ? setup.RestartRequired ? 3010 : 0 : 1);
+            setup.Show(); return;
+        }
         var screenshotIndex = Array.IndexOf(e.Args, "--screenshots");
         var smoke = e.Args.Contains("--smoke-test");
         var automation = smoke || screenshotIndex >= 0;
@@ -111,7 +120,7 @@ public partial class App : Application
             finally { Hardware.Dispose(); }
         });
         if (automation) _ = RunAutomation(e.Args, screenshotIndex, smoke);
-        else if (Settings.AutoUpdate && !e.Args.Contains("--skip-update")) _ = CheckUpdatesAsync();
+        else _ = PrepareStartupAsync(e.Args);
         var ackIndex = Array.IndexOf(e.Args, "--update-ack");
         if (ackIndex >= 0 && ackIndex + 1 < e.Args.Length)
         {
@@ -121,13 +130,43 @@ public partial class App : Application
         }
     }
 
+    private async Task PrepareStartupAsync(string[] args)
+    {
+        if (!args.Contains("--skip-component-setup") && (RtssService.FindExecutable(Settings.RtssPath) is null || !DriverInstalled))
+            await PrepareComponentsAsync();
+        if (!Exiting && Settings.AutoUpdate && !args.Contains("--skip-update")) await CheckUpdatesAsync();
+    }
+
+    internal async void PrepareComponents() => await PrepareComponentsAsync();
+
+    private Task PrepareComponentsAsync()
+    {
+        if (_componentSetup is not null) { _componentSetup.Activate(); return Task.CompletedTask; }
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var driverWasMissing = !DriverInstalled;
+        var setup = new ComponentSetupWindow { Owner = _main };
+        _componentSetup = setup;
+        setup.Closed += (_, _) =>
+        {
+            _componentSetup = null;
+            if (setup.Prepared)
+            {
+                RtssService.StartInstalled(Settings.RtssPath);
+                _main.SetNotice(L.T(setup.RestartRequired ? "componentReboot" : driverWasMissing ? "driverRestart" : "componentReady"));
+                _main.Navigate(_main.CurrentPage);
+            }
+            completed.TrySetResult();
+        };
+        setup.Show(); return completed.Task;
+    }
+
     private async Task CheckUpdatesAsync()
     {
         try
         {
             var status = new Progress<string>(text => _main.SetNotice(text));
             var stage = await Task.Run(() => new UpdateService().PrepareAsync(status, _stop.Token), _stop.Token);
-            if (stage is null || Exiting) return;
+            if (stage is null || Exiting || _componentSetup is not null) return;
             if (Recorder.IsRecording) { _main.SetNotice(L.T("updateDeferred")); return; }
             // Test write permissions before closing the running program.
             var probe = Path.Combine(AppContext.BaseDirectory, ".dedsec-update-" + Guid.NewGuid().ToString("N"));
@@ -192,13 +231,6 @@ public partial class App : Application
         Rtss.Publish(sample, Settings, visible);
     }
 
-    internal void ChooseRtss()
-    {
-        var dialog = new Microsoft.Win32.OpenFileDialog { Filter = "RTSS.exe|RTSS.exe", CheckFileExists = true };
-        if (dialog.ShowDialog(_main) != true) return;
-        Settings.RtssPath = dialog.FileName; Save(); RtssService.StartInstalled(Settings.RtssPath);
-    }
-
     internal void ToggleRecording()
     {
         try
@@ -211,29 +243,7 @@ public partial class App : Application
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { ShowError(ex); }
     }
 
-    internal bool DriverInstalled => LibreHardwareMonitor.PawnIo.PawnIo.IsInstalled;
-
-    internal async void InstallDriver()
-    {
-        try
-        {
-            var path = Path.Combine(AppContext.BaseDirectory, "tools", "PawnIO_setup.exe");
-            using (var file = File.OpenRead(path))
-            {
-                var hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(file));
-                if (!hash.Equals("1F519A22E47187F70A1379A48CA604981C4FCF694F4E65B734AAA74A9FBA3032", StringComparison.OrdinalIgnoreCase))
-                    throw new IOException("PawnIO installer checksum mismatch.");
-            }
-            using var installer = Process.Start(new ProcessStartInfo(path) { UseShellExecute = true, Verb = "runas" });
-            if (installer is not null)
-            {
-                await installer.WaitForExitAsync();
-                if (installer.ExitCode == 0) _main.SetNotice(L.T("driverRestart"));
-            }
-        }
-        catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223) { }
-        catch (Exception ex) { ShowError(ex); }
-    }
+    internal bool DriverInstalled => ComponentSetupService.IsPawnInstalled();
 
     internal void Elevate()
     {
@@ -250,6 +260,7 @@ public partial class App : Application
 
     internal async void RequestExit()
     {
+        if (_componentSetup is not null) { _componentSetup.Activate(); return; }
         if (Exiting) return;
         Exiting = true; _stop.Cancel();
         _main.Hide(); Overlay.Hide(); _tray?.Dispose();
@@ -324,6 +335,11 @@ public partial class App : Application
             }
             L.Language = "en"; _main.Navigate("dashboard");
             await Task.Delay(300); _main.ExportScreenshot(Path.Combine(path, "dashboard.en.png"));
+            L.Language = "ru";
+            var componentPreview = new ComponentSetupWindow(preview: true) { Owner = _main };
+            componentPreview.Show(); await Task.Delay(300); componentPreview.UpdateLayout();
+            SaveVisual((FrameworkElement)componentPreview.Content, Path.Combine(path, "components.png"));
+            componentPreview.Close();
             if (Latest is { } final)
             {
                 File.WriteAllText(Path.Combine(path, "diagnostics.json"), JsonSerializer.Serialize(new

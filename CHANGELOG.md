@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.2-preview — local owner testing only
+
+- One installer prepares the game overlay and sensor support automatically; portable first launch and in-app repair use the same verified provisioning flow.
+- Explicit dark installer and uninstaller styling, including the title bar, with Dedsec artwork.
+- Draggable application title bar with minimize/maximize/close and a window size that fits the work area.
+- RTSS in-game OSD and OpenGL FPS fallback alongside PresentMon capture.
+- Stable-release startup updates with verified downloads and rollback. Publication remains disabled pending owner feedback.
+
 ## 1.0.0 — 2026-11-13
 
 First Windows x64 release of Dedsec Monitor.

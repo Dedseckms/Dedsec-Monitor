@@ -1,7 +1,7 @@
-param([int]$TargetProcessId = 0)
+param([int]$TargetProcessId = 0, [string]$PublishFolder = 'artifacts/publish')
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
-$exe = Join-Path $root 'artifacts/publish/Dedsec.Monitor.exe'
+$exe = Join-Path (Join-Path $root $PublishFolder) 'Dedsec.Monitor.exe'
 if (-not (Test-Path $exe)) { throw 'Run ./scripts/build.ps1 first.' }
 $output = Join-Path $root 'docs/screenshots'
 $arguments = @('--screenshots', ('"' + $output + '"'), '--smoke-test')
