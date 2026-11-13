@@ -5,6 +5,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Input;
+using System.Windows.Shell;
 using Dedsec.Core;
 using Microsoft.Win32;
 
@@ -33,14 +35,26 @@ internal sealed class MainWindow : Window
     {
         _app = app; Title = "Dedsec Monitor"; Width = 1440; Height = 960;
         Background = Ui.Brush("#101310"); Foreground = Ui.Brush("#EBF0E7"); FontFamily = new FontFamily("Segoe UI"); FontSize = 14;
-        MinWidth = 1120; MinHeight = 760; WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        var area = SystemParameters.WorkArea;
+        Width = Math.Min(1440, area.Width - 40); Height = Math.Min(960, area.Height - 40);
+        MinWidth = Math.Min(1000, area.Width - 40); MinHeight = Math.Min(620, area.Height - 40);
+        WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        WindowStyle = WindowStyle.None;
+        WindowChrome.SetWindowChrome(this, new WindowChrome
+        {
+            CaptionHeight = 0,
+            ResizeBorderThickness = new Thickness(7),
+            GlassFrameThickness = new Thickness(0),
+            CornerRadius = new CornerRadius(0),
+            UseAeroCaptionButtons = false
+        });
         var root = new Grid { Background = Ui.Brush("#101310") }; root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(214) });
         root.ColumnDefinitions.Add(new ColumnDefinition());
         var sidebar = new DockPanel { LastChildFill = true, Margin = new Thickness(22, 28, 20, 22) };
         var logo = Ui.Stack(Ui.Text("[D_]", 44, Ui.Acid, true), Ui.Text("DEDSEC", 25, null, true),
             Ui.Mono("M O N I T O R", 11, Ui.Muted));
         logo.Margin = new Thickness(6, 0, 0, 44); DockPanel.SetDock(logo, Dock.Top); sidebar.Children.Add(logo);
-        var bottom = Ui.Stack(Ui.Mono("v1.0.0 / WINDOWS x64", 10, Ui.Muted), new Border { Height = 12 }, Ui.Text("", 10, Ui.Muted));
+        var bottom = Ui.Stack(Ui.Mono("v" + App.ProductVersion + " / PREVIEW", 10, Ui.Muted), new Border { Height = 12 }, Ui.Text("", 10, Ui.Muted));
         DockPanel.SetDock(bottom, Dock.Bottom); sidebar.Children.Add(bottom); sidebar.Children.Add(_navigation);
         Ui.Cell(root, new Border
         {
@@ -56,11 +70,40 @@ internal sealed class MainWindow : Window
         top.Margin = new Thickness(0, 0, 0, 25); DockPanel.SetDock(top, Dock.Top); main.Children.Add(top);
         _notice.Margin = new Thickness(0, 10, 0, 0); DockPanel.SetDock(_notice, Dock.Bottom); main.Children.Add(_notice);
         main.Children.Add(new ScrollViewer { Content = _content, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled });
-        Ui.Cell(root, main, 1); Content = root;
+        Ui.Cell(root, main, 1);
+        var frame = new DockPanel { Background = Ui.Brush("#101310") };
+        var caption = CreateCaption(); DockPanel.SetDock(caption, Dock.Top); frame.Children.Add(caption);
+        frame.Children.Add(root); Content = frame;
         SourceInitialized += (_, _) => RegisterKeys();
         Closing += OnClosing;
         Navigate("dashboard");
     }
+
+    private UIElement CreateCaption()
+    {
+        var caption = new DockPanel { Height = 44, Background = Ui.Brush("#171F15"), LastChildFill = true };
+        var actions = Ui.Row();
+        var minimize = Ui.Action("—", () => WindowState = WindowState.Minimized);
+        var maximize = Ui.Action("□", ToggleMaximize);
+        var close = Ui.Action("×", Close);
+        foreach (var (button, key) in new[] { (minimize, "windowMin"), (maximize, "windowMax"), (close, "windowClose") })
+        {
+            button.Width = 48; button.Height = 44; button.Padding = new Thickness(0);
+            button.FontSize = 19; button.BorderThickness = new Thickness(0); button.Background = Brushes.Transparent;
+            button.ToolTip = L.T(key); System.Windows.Automation.AutomationProperties.SetName(button, L.T(key));
+            actions.Children.Add(button);
+        }
+        close.Foreground = Ui.Brush("#FFB0A0"); DockPanel.SetDock(actions, Dock.Right); caption.Children.Add(actions);
+        var drag = new Border { Background = Brushes.Transparent, Padding = new Thickness(22, 0, 0, 0), Child = Ui.Mono("[D_]  DEDSEC MONITOR", 12, Ui.Acid) };
+        drag.MouseLeftButtonDown += (_, e) =>
+        {
+            if (e.ClickCount == 2) ToggleMaximize();
+            else if (e.ButtonState == MouseButtonState.Pressed) DragMove();
+        };
+        caption.Children.Add(drag); return caption;
+    }
+
+    private void ToggleMaximize() => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
 
     private void RegisterKeys()
     {
@@ -96,6 +139,12 @@ internal sealed class MainWindow : Window
     }
 
     internal void Restore() { Show(); WindowState = WindowState.Normal; Activate(); }
+    internal bool VerifyWindowControls()
+    {
+        WindowState = WindowState.Minimized; var minimized = WindowState == WindowState.Minimized;
+        WindowState = WindowState.Normal; ToggleMaximize(); var maximized = WindowState == WindowState.Maximized;
+        ToggleMaximize(); return minimized && maximized && WindowState == WindowState.Normal;
+    }
     internal void SetNotice(string message) => _notice.Text = message;
 
     internal void ExportScreenshot(string path)
@@ -203,7 +252,7 @@ internal sealed class MainWindow : Window
         _processes.SelectionChanged += (_, _) => { if (_processes.SelectedItem is TargetChoice choice) _app.ManualTarget = choice.Id; };
         stats.Children.Add(_processes); Ui.Gap(stats, 22);
         AddStat(stats, "frameTime", "frameTime"); AddStat(stats, "oneLow", "oneLow"); AddStat(stats, "samples", "samples");
-        Ui.Gap(stats, 10); stats.Children.Add(Ui.Text(L.T("fpsWindow"), 11, Ui.Muted));
+        Ui.Gap(stats, 10); stats.Children.Add(Value("frameHelp", 11, Ui.Muted));
         Ui.Cell(middle, Ui.Card(stats), 1); page.Children.Add(middle); Ui.Gap(page, 18);
         var details = Ui.Columns(1, 1, 1);
         Ui.Cell(details, Ui.Margin(DeviceCard("cpu", "cpuName", "cpuTemp", "cpuClock")), 0);
@@ -236,6 +285,8 @@ internal sealed class MainWindow : Window
         if (_processes is null) return;
         var values = new List<TargetChoice> { new(0, L.T("auto")) };
         values.AddRange(_app.Frames.Processes(DateTimeOffset.Now).Select(p => new TargetChoice(p.Pid, $"{p.Name} · {p.Pid}")));
+        values.AddRange(_app.Rtss.Applications.Where(p => values.All(v => v.Id != p.ProcessId))
+            .Select(p => new TargetChoice(p.ProcessId, $"{p.Application} · {p.ProcessId} · RTSS")));
         if (_app.ManualTarget > 0 && values.All(p => p.Id != _app.ManualTarget))
             values.Add(new(_app.ManualTarget, $"PID {_app.ManualTarget}"));
         _processes.ItemsSource = values;
@@ -258,6 +309,13 @@ internal sealed class MainWindow : Window
             Ui.Text(L.T("overlaySub"), 13, Ui.Muted), new Border { Height = 18 });
         controls.Children.Add(Toggle("enableOverlay", settings.OverlayEnabled, value => { settings.OverlayEnabled = value; RefreshButtons(); }));
         controls.Children.Add(Toggle("onlyGame", settings.OverlayOnlyInGame, value => settings.OverlayOnlyInGame = value));
+        Ui.Gap(controls, 12);
+        controls.Children.Add(Labelled("overlayBackend", Choice([L.T("backendAuto"), L.T("backendDesktop"), "RTSS"],
+            Array.IndexOf(new[] { "Auto", "Desktop", "Rtss" }, settings.OverlayBackend), i => settings.OverlayBackend = new[] { "Auto", "Desktop", "Rtss" }[i])));
+        controls.Children.Add(Value("rtssStatus", 11, Ui.Acid));
+        controls.Children.Add(Ui.Text(L.T("rtssHint"), 12, Ui.Muted)); Ui.Gap(controls, 10);
+        controls.Children.Add(Ui.Row(Ui.Action(L.T("rtssDownload"), () => App.OpenPath(RtssService.OfficialDownload)),
+            Ui.Action(L.T("rtssSelect"), _app.ChooseRtss)));
         Ui.Gap(controls, 20); controls.Children.Add(Ui.Mono(L.T("metrics"), 10, Ui.Muted));
         var toggles = Ui.Columns(1, 1);
         Ui.Cell(toggles, Ui.Stack(Toggle("fps", settings.ShowFps, v => settings.ShowFps = v),
@@ -387,6 +445,8 @@ internal sealed class MainWindow : Window
         general.Children.Add(Labelled("graphicsAdapter", Choice(new[] { L.T("gpuAuto") }.Concat(gpus.Select(g => g.Name)).ToArray(),
             Array.FindIndex(gpus, g => g.Id == settings.GpuIdentifier) + 1, i => settings.GpuIdentifier = i == 0 ? null : gpus[i - 1].Id)));
         general.Children.Add(Toggle("autoCapture", settings.AutoCapture, v => settings.AutoCapture = v));
+        general.Children.Add(Toggle("autoRtss", settings.StartRtss, v => settings.StartRtss = v));
+        general.Children.Add(Toggle("autoUpdate", settings.AutoUpdate, v => settings.AutoUpdate = v));
         general.Children.Add(Toggle("trayClose", settings.CloseToTray, v => settings.CloseToTray = v));
         general.Children.Add(Toggle("minimized", settings.StartMinimized, v => settings.StartMinimized = v));
         general.Children.Add(Toggle("startup", StartupEnabled(), SetStartup));
@@ -408,7 +468,7 @@ internal sealed class MainWindow : Window
         if (!_app.Elevated) access.Children.Add(Ui.Action(L.T("elevate"), _app.Elevate, true));
         right.Children.Add(Ui.Card(access)); Ui.Gap(right, 18);
         var about = Ui.Stack(Ui.Mono(L.T("about"), 10, Ui.Muted)); Ui.Gap(about, 20);
-        about.Children.Add(Ui.Text(L.T("aboutBody"), 14)); Ui.Gap(about, 20);
+        about.Children.Add(Ui.Text(L.T("aboutBody").Replace("1.0.0", App.ProductVersion + " preview"), 14)); Ui.Gap(about, 20);
         about.Children.Add(Ui.Action(L.T("repo"), () => App.OpenPath("https://github.com/Dedseckms/Dedsec-Monitor"))); Ui.Gap(about, 12);
         about.Children.Add(Ui.Action(L.T("logs"), () => App.OpenPath(App.DataDirectory)));
         right.Children.Add(Ui.Card(about)); Ui.Cell(columns, right, 1); page.Children.Add(columns); return page;
@@ -429,7 +489,7 @@ internal sealed class MainWindow : Window
     internal void RefreshButtons()
     {
         if (_recordButton is not null) _recordButton.Content = L.T(_app.Recorder.IsRecording ? "stopRecord" : "record");
-        if (_captureButton is not null) _captureButton.Content = L.T(_app.Capture.Running ? "stopCapture" : "startCapture");
+        if (_captureButton is not null) _captureButton.Content = L.T(_app.CaptureActive ? "stopCapture" : "startCapture");
         if (_overlayButton is not null) _overlayButton.Content = L.T(_app.Settings.OverlayEnabled ? "overlayOn" : "overlayOff");
     }
 
@@ -437,14 +497,16 @@ internal sealed class MainWindow : Window
     {
         if (appendHistory) { _history.Enqueue(s); while (_history.Count > 60) _history.Dequeue(); }
         void Set(string key, string value) { if (_values.TryGetValue(key, out var block)) block.Text = value; }
-        _status.Text = "● " + L.T(_app.Capture.State switch
+        _status.Text = "● " + L.T(_app.CaptureActive ? "captureRunning" : _app.Capture.State switch
         { "running" => "captureRunning", "failed" => "captureFailed", "missing" => "captureMissing", _ => "captureStopped" });
         _status.ToolTip = _app.Capture.Error ?? L.T("ready");
         Set("fps", Ui.N(s.Frames.Fps)); Set("fpsDetail", s.Frames.Fps is null ? L.T("waiting") : "1% LOW  " + Ui.N(s.Frames.LowOnePercent));
         Set("cpuLoad", Ui.N(s.CpuLoad)); Set("cpuDetail", Ui.Unit(s.CpuTemperature, "°C") + "  /  " + Ui.Unit(s.CpuClock / 1000, "GHz", "0.00"));
         Set("gpuLoad", Ui.N(s.GpuLoad)); Set("gpuDetail", Ui.Unit(s.GpuTemperature, "°C") + "  /  " + Ui.Unit(s.GpuClock, "MHz"));
         Set("ramUsed", Ui.N(s.MemoryUsed, "0.0")); Set("ramDetail", "/ " + Ui.N(s.MemoryTotal, "0.0") + " GB  ·  " + Ui.N(s.MemoryLoad) + "%");
-        Set("game", string.IsNullOrEmpty(s.Frames.Application) ? L.T("waiting") : s.Frames.Application + " / PID " + s.Frames.ProcessId);
+        Set("game", string.IsNullOrEmpty(s.Frames.Application) ? L.T("waiting") : s.Frames.Application + " / " + s.Frames.Source + " / PID " + s.Frames.ProcessId);
+        Set("rtssStatus", L.T(_app.Rtss.Connected ? "rtssReady" : "rtssMissing"));
+        Set("frameHelp", L.T(s.Frames.Source == "RTSS" ? "rtssWindow" : "fpsWindow"));
         Set("frameTime", Ui.Unit(s.Frames.FrameTime, "ms", "0.00")); Set("oneLow", Ui.Unit(s.Frames.LowOnePercent, "FPS"));
         Set("samples", s.Frames.Samples.ToString()); Set("cpuName", s.CpuName); Set("gpuName", s.GpuName);
         Set("cpuTemp", Ui.Unit(s.CpuTemperature, "°C")); Set("cpuClock", Ui.Unit(s.CpuClock / 1000, "GHz", "0.00"));

@@ -1,7 +1,7 @@
 namespace Dedsec.Core;
 
 public sealed record FrameSummary(int ProcessId, string Application, double? Fps,
-    double? FrameTime, double? LowOnePercent, int Samples);
+    double? FrameTime, double? LowOnePercent, int Samples, string Source = "PresentMon");
 
 public sealed record SensorReading(string Device, string Name, string Type, double? Value);
 
@@ -37,6 +37,10 @@ public sealed class Settings
     public bool AutoCapture { get; set; } = true;
     public int IntervalMs { get; set; } = 1000;
     public string? GpuIdentifier { get; set; }
+    public string OverlayBackend { get; set; } = "Auto";
+    public bool StartRtss { get; set; } = true;
+    public string? RtssPath { get; set; }
+    public bool AutoUpdate { get; set; } = true;
 
     public void Normalize()
     {
@@ -47,5 +51,6 @@ public sealed class Settings
         OverlayOpacity = double.IsFinite(OverlayOpacity) ? Math.Clamp(OverlayOpacity, .35, 1) : .92;
         IntervalMs = Math.Clamp(IntervalMs, 500, 3000);
         MonitorIndex = Math.Max(0, MonitorIndex);
+        if (OverlayBackend is not ("Auto" or "Desktop" or "Rtss")) OverlayBackend = "Auto";
     }
 }

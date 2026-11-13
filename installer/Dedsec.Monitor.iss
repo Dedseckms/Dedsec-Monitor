@@ -1,10 +1,11 @@
 #ifndef AppVersion
-  #define AppVersion "1.0.0"
+  #define AppVersion "1.0.1-preview"
 #endif
 [Setup]
 AppId={{D17C8746-C637-4EA0-935E-E61BC1C33C04}
 AppName=Dedsec Monitor
 AppVersion={#AppVersion}
+VersionInfoVersion=1.0.1.0
 AppPublisher=Dedseckms
 AppPublisherURL=https://github.com/Dedseckms/Dedsec-Monitor
 AppSupportURL=https://github.com/Dedseckms/Dedsec-Monitor/issues

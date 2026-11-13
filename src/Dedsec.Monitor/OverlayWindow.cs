@@ -77,7 +77,7 @@ internal sealed class OverlayWindow : Window
         var settings = _app.Settings;
         _panel.Update(snapshot, settings);
         var target = _app.ManualTarget > 0 ? _app.ManualTarget : _app.AutoTarget;
-        var show = settings.OverlayEnabled && (!settings.OverlayOnlyInGame || target > 0 && Native.ForegroundProcess() == target);
+        var show = !_app.UsesRtssOverlay && settings.OverlayEnabled && (!settings.OverlayOnlyInGame || target > 0 && Native.ForegroundProcess() == target);
         if (show)
         {
             if (!IsVisible) Show();

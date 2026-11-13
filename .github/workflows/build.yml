@@ -1,8 +1,7 @@
-name: Build and release
+name: Build preview
 on:
   push:
-    branches: [main]
-    tags: ['v*']
+    branches: [main, 'codex/**']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -26,6 +25,11 @@ jobs:
       - name: Test, build and package
         shell: pwsh
         run: ./scripts/build.ps1 -Installer
+      - name: Verify updater success and rollback
+        shell: pwsh
+        run: |
+          ./scripts/test-updater.ps1 -Acknowledge
+          ./scripts/test-updater.ps1
       - name: Upload builds
         uses: actions/upload-artifact@v4
         with:
@@ -34,25 +38,3 @@ jobs:
             artifacts/*.exe
             artifacts/*.zip
             artifacts/SHA256SUMS.txt
-  release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: windows
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: Dedsec-Monitor-windows-x64
-          path: release
-      - name: Publish GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          TAG: ${{ github.ref_name }}
-        run: |
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release already published; keeping its verified assets."
-          else
-            gh release create "$TAG" release/* --title "Dedsec Monitor $TAG" --generate-notes
-          fi

@@ -2,9 +2,11 @@
 
 # Every frame. Under control.
 
+> **1.0.1-preview, local testing only.** Release publication is paused until the owner approves this build. CI does not publish releases.
+
 **Dedsec Monitor** is a native Windows performance monitor with a dark, acid-green interface, a click-through game overlay, live hardware readings and CSV session recording. Russian and English are included.
 
-[Download the latest release](https://github.com/Dedseckms/Dedsec-Monitor/releases/latest) · [Русский README](README.md) · [Report an issue](https://github.com/Dedseckms/Dedsec-Monitor/issues)
+[Preview validation](docs/VALIDATION.md) · [Русский README](README.md) · [Report an issue](https://github.com/Dedseckms/Dedsec-Monitor/issues)
 
 ![Dedsec Monitor running on real hardware](docs/screenshots/dashboard.en.png)
 
@@ -30,7 +32,7 @@ Screenshots show the real application and real sensors. `Dedsec.TestScene.exe` i
 
 ## Local first
 
-No account, ads, cloud analytics or application network requests. Settings, logs and recordings stay in `%LOCALAPPDATA%\Dedsec\Monitor`. Uninstall preserves this folder. Closing the window defaults to the system tray; use **Exit** in its menu to stop the app.
+No account, ads or cloud analytics. Optional startup updates contact GitHub for published stable releases and their assets; hardware readings are not sent. Settings, logs and recordings stay in `%LOCALAPPDATA%\Dedsec\Monitor`. Uninstall preserves this folder. Closing the window defaults to the system tray; use **Exit** in its menu to stop the app.
 
 ## Build
 
@@ -41,7 +43,15 @@ On Windows, install .NET 10 SDK, PowerShell 7 and Inno Setup 6.7.1+:
 dotnet format Dedsec.Monitor.slnx --verify-no-changes
 ```
 
-The build script fetches a pinned, SHA-256-verified PresentMon executable, runs tests, then produces a self-contained app, Portable ZIP and themed installer in `artifacts/`. GitHub Actions runs the same build; pushing a `v*` tag creates a release.
+The build script fetches verified dependencies, runs both test suites, then produces the self-contained app, updater, Portable ZIP and themed installer in `artifacts/`. GitHub Actions only builds preview artifacts. Publishing requires the owner's approval.
+
+## Fullscreen / OpenGL and updates
+
+The preview integrates RTSS shared-memory FPS and an in-game OSD. Install RTSS separately from its [official Guru3D page](https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/) and start it before the game. The RTSS backend renders inside the game's API and is intended for fullscreen/OpenGL use; the desktop backend remains for windowed/borderless mode. Minecraft Java prefers RTSS readings when available. RTSS controls its panel placement. No RTSS binaries are redistributed here. Anti-cheat restrictions still apply.
+
+Real OpenGL capture and OSD rendering were verified on a separate graphics workload, not Minecraft itself. RTSS FPS uses its own measurement interval; per-frame 1% low is unavailable through this path and stays blank.
+
+Startup updates ignore drafts/prereleases, verify SHA-256 and archive paths, preserve unrelated portable-folder files, and roll back if the new program cannot confirm startup. Recording defers application of an update. No published release or an offline check leaves the running app unaffected.
 
 ## License
 
