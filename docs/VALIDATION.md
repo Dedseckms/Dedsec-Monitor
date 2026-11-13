@@ -1,8 +1,8 @@
 # Validation
 
-## 1.0.2-preview — waiting for owner testing
+## 1.0.2 — release validation
 
-The release remains an unpublished draft. CI release publication is disabled.
+The owner approved publication on 2026-11-13 after reviewing the local 1.0.2-preview build. Stable 1.0.2 retains its implementation and removes preview labeling. CI builds and tests packages; GitHub release publication is performed explicitly.
 
 - 40 automated tests passed: 27 core tests and 13 Windows integration tests. Coverage includes actual shared-memory slot ownership and lock handling, mocked stable-release download/caching, checksum failures, ZIP traversal/reserved names, transactional rollback, automatic component provisioning and Intel hybrid-core clock selection.
 - PresentMon alone produced no FPS for the separate OpenGL workload on the local Intel GPU. With RTSS, Dedsec Monitor read nonzero FPS from the same kind of workload, reported source `RTSS`, and rendered its OSD into the OpenGL framebuffer. The captured framebuffer is a real image, not a generated mockup.

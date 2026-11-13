@@ -5,7 +5,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Deterministic>true</Deterministic>
     <Version>1.0.2</Version>
-    <InformationalVersion>1.0.2-preview</InformationalVersion>
+    <InformationalVersion>1.0.2</InformationalVersion>
     <Authors>Dedseckms</Authors>
     <RepositoryUrl>https://github.com/Dedseckms/Dedsec-Monitor</RepositoryUrl>
   </PropertyGroup>

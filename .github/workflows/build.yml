@@ -1,4 +1,4 @@
-name: Build preview
+name: Build Windows
 on:
   push:
     branches: [main, 'codex/**']

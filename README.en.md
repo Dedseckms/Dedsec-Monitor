@@ -2,33 +2,33 @@
 
 # Every frame. Under control.
 
-> **1.0.1-preview, local testing only.** Release publication is paused until the owner approves this build. CI does not publish releases.
+> **Dedsec Monitor 1.0.2** · [Download installer](https://github.com/Dedseckms/Dedsec-Monitor/releases/download/v1.0.2/Dedsec-Monitor-1.0.2-Setup-x64.exe) · [Portable ZIP](https://github.com/Dedseckms/Dedsec-Monitor/releases/download/v1.0.2/Dedsec-Monitor-1.0.2-Portable-x64.zip)
 
 **Dedsec Monitor** is a native Windows performance monitor with a dark, acid-green interface, a click-through game overlay, live hardware readings and CSV session recording. Russian and English are included.
 
-[Preview validation](docs/VALIDATION.md) · [Русский README](README.md) · [Report an issue](https://github.com/Dedseckms/Dedsec-Monitor/issues)
+[Validation](docs/VALIDATION.md) · [Русский README](README.md) · [Report an issue](https://github.com/Dedseckms/Dedsec-Monitor/issues)
 
 ![Dedsec Monitor running on real hardware](docs/screenshots/dashboard.en.png)
 
 ## Get started
 
-1. Install the **Setup x64 EXE**, or extract the entire **Portable x64 ZIP** and run `Dedsec.Monitor.exe`. The .NET runtime and PresentMon are included.
+1. Install the **Setup x64 EXE**, or extract the entire **Portable x64 ZIP** and run `Dedsec.Monitor.exe`. The .NET runtime and PresentMon are included. Setup automatically prepares overlay and sensor support; internet access and Windows permission prompts are required. Portable first launch does the same when components are missing.
 2. If frame capture or temperatures are unavailable, use **Settings → Restart with full access** and accept the Windows administrator prompt.
-3. Launch a game in windowed or borderless mode. Auto-select remembers the foreground graphics process; you can also choose it manually in Overview.
+3. Launch a game after the monitor. RTSS supplies the in-game overlay; the desktop overlay uses windowed/borderless mode. Auto-select remembers the foreground graphics process; you can also choose it manually in Overview.
 4. Enable the overlay. **Ctrl + Shift + O** toggles it; **Ctrl + Shift + R** starts/stops a recording.
 
-CPU/GPU load, temperature and clocks, RAM, VRAM and available power sensors are collected through LibreHardwareMonitor. FPS comes from PresentMon's ETW capture, without injecting DLLs into the game. An unavailable reading is shown as `—`.
+CPU/GPU load, temperature and clocks, RAM, VRAM and available power sensors are collected through LibreHardwareMonitor. FPS comes from PresentMon's ETW capture or RTSS. The PresentMon path does not inject DLLs; RTSS uses an in-game hook. An unavailable reading is shown as `—`.
 
 ## Compatibility and measurements
 
 - Windows 10 build 19041+ or Windows 11, x64. No Linux or ARM64 build in this release.
-- The overlay is a separate transparent Windows window, intended for borderless/windowed games. Exclusive fullscreen, driver behavior and anti-cheat policies may restrict it. No promise of support for every game.
+- Two overlay backends are available: an RTSS in-game OSD and a transparent desktop window for borderless/windowed games. Driver behavior and anti-cheat policies may restrict either path. No promise of support for every game.
 - FPS is `1000 / mean frame time` in a rolling two-second window; 1% low is the reciprocal of the average slowest 1% of frame times. The busiest swap chain is selected. These are application Present rates, not display refresh rates.
 - Sessions contain aggregated measurements at the configured 0.5–3 second polling interval, not every frame. Session average/minimum FPS summarize these measurements, not a per-frame benchmark.
-- Hardware sensor availability depends on the device, drivers and permissions. Some low-level CPU sensors need PawnIO; its official signed installer is bundled and can be launched from Settings, with an explicit Windows permission prompt. See [technical documentation](docs/TECHNICAL.md).
+- Hardware sensor availability depends on the device, drivers and permissions. Low-level CPU sensor support is prepared automatically using the bundled signed PawnIO installer, with Windows permission prompts. Restore components in Settings can repair missing support. See [technical documentation](docs/TECHNICAL.md).
 - The initial binaries are unsigned. Verify downloads with the release's `SHA256SUMS.txt`.
 
-Screenshots show the real application and real sensors. `Dedsec.TestScene.exe` is a bounded rendering workload used to verify capture, not a game benchmark.
+Screenshots show the real application and real sensors. `Dedsec.OpenGlScene.exe` is a bounded rendering workload used to verify capture, not a game benchmark.
 
 ## Local first
 
@@ -43,11 +43,11 @@ On Windows, install .NET 10 SDK, PowerShell 7 and Inno Setup 6.7.1+:
 dotnet format Dedsec.Monitor.slnx --verify-no-changes
 ```
 
-The build script fetches verified dependencies, runs both test suites, then produces the self-contained app, updater, Portable ZIP and themed installer in `artifacts/`. GitHub Actions only builds preview artifacts. Publishing requires the owner's approval.
+The build script fetches verified dependencies, runs both test suites, then produces the self-contained app, updater, Portable ZIP and themed installer in `artifacts/`. GitHub Actions builds and tests packages. Releases are published explicitly after owner approval.
 
 ## Fullscreen / OpenGL and updates
 
-The preview integrates RTSS shared-memory FPS and an in-game OSD. Install RTSS separately from its [official Guru3D page](https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/) and start it before the game. The RTSS backend renders inside the game's API and is intended for fullscreen/OpenGL use; the desktop backend remains for windowed/borderless mode. Minecraft Java prefers RTSS readings when available. RTSS controls its panel placement. No RTSS binaries are redistributed here. Anti-cheat restrictions still apply.
+Setup automatically downloads RTSS from the official Guru3D mirror, verifies pinned archive and executable hashes, and installs it when missing. No manual downloads or executable-path selection are required. Dedsec Monitor starts RTSS before the game. RTSS remains subject to its [author's terms](https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/); no RTSS binaries are rehosted in our packages. The RTSS backend renders inside the game's API and is intended for fullscreen/OpenGL use; the desktop backend remains for windowed/borderless mode. Minecraft Java prefers RTSS readings when available. RTSS controls its panel placement. Anti-cheat restrictions still apply.
 
 Real OpenGL capture and OSD rendering were verified on a separate graphics workload, not Minecraft itself. RTSS FPS uses its own measurement interval; per-frame 1% low is unavailable through this path and stays blank.
 

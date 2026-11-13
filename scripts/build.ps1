@@ -1,4 +1,4 @@
-param([switch]$Installer, [switch]$SkipTests, [string]$BuildLabel = '1.0.2-preview', [string]$PublishFolder = 'artifacts/publish')
+param([switch]$Installer, [switch]$SkipTests, [string]$BuildLabel = '1.0.2', [string]$PublishFolder = 'artifacts/publish')
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 if ($BuildLabel -notmatch '^\d+\.\d+\.\d+(-[A-Za-z0-9.-]+)?$') { throw 'Invalid build label' }

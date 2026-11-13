@@ -1,4 +1,4 @@
-param([string]$BuildLabel = '1.0.2-preview', [switch]$PrepareComponents)
+param([string]$BuildLabel = '1.0.2', [switch]$PrepareComponents)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $existing = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{D17C8746-C637-4EA0-935E-E61BC1C33C04}_is1' -ErrorAction SilentlyContinue

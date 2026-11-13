@@ -54,7 +54,7 @@ internal sealed class MainWindow : Window
         var logo = Ui.Stack(Ui.Text("[D_]", 44, Ui.Acid, true), Ui.Text("DEDSEC", 25, null, true),
             Ui.Mono("M O N I T O R", 11, Ui.Muted));
         logo.Margin = new Thickness(6, 0, 0, 44); DockPanel.SetDock(logo, Dock.Top); sidebar.Children.Add(logo);
-        var bottom = Ui.Stack(Ui.Mono("v" + App.ProductVersion + " / PREVIEW", 10, Ui.Muted), new Border { Height = 12 }, Ui.Text("", 10, Ui.Muted));
+        var bottom = Ui.Stack(Ui.Mono("v" + App.ProductVersion, 10, Ui.Muted), new Border { Height = 12 }, Ui.Text("", 10, Ui.Muted));
         DockPanel.SetDock(bottom, Dock.Bottom); sidebar.Children.Add(bottom); sidebar.Children.Add(_navigation);
         Ui.Cell(root, new Border
         {
@@ -467,7 +467,7 @@ internal sealed class MainWindow : Window
         if (!_app.Elevated) access.Children.Add(Ui.Action(L.T("elevate"), _app.Elevate, true));
         right.Children.Add(Ui.Card(access)); Ui.Gap(right, 18);
         var about = Ui.Stack(Ui.Mono(L.T("about"), 10, Ui.Muted)); Ui.Gap(about, 20);
-        about.Children.Add(Ui.Text(L.T("aboutBody").Replace("1.0.0", App.ProductVersion + " preview"), 14)); Ui.Gap(about, 20);
+        about.Children.Add(Ui.Text(L.T("aboutBody").Replace("Dedsec Monitor", "Dedsec Monitor " + App.ProductVersion), 14)); Ui.Gap(about, 20);
         about.Children.Add(Ui.Action(L.T("repo"), () => App.OpenPath("https://github.com/Dedseckms/Dedsec-Monitor"))); Ui.Gap(about, 12);
         about.Children.Add(Ui.Action(L.T("logs"), () => App.OpenPath(App.DataDirectory)));
         right.Children.Add(Ui.Card(about)); Ui.Cell(columns, right, 1); page.Children.Add(columns); return page;

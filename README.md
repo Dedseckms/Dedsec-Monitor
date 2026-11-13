@@ -1,9 +1,9 @@
 <p align="center"><img src="docs/banner.png" alt="Dedsec Monitor — Every frame. Under control." width="100%"></p>
 
-> **1.0.2-preview — локальная тестовая сборка.** Публикация релиза приостановлена до проверки владельцем. Установщик: `artifacts/Dedsec-Monitor-1.0.2-preview-Setup-x64.exe`. Автоматическая публикация в CI отключена.
+> **Dedsec Monitor 1.0.2** · [Скачать установщик](https://github.com/Dedseckms/Dedsec-Monitor/releases/download/v1.0.2/Dedsec-Monitor-1.0.2-Setup-x64.exe) · [Portable ZIP](https://github.com/Dedseckms/Dedsec-Monitor/releases/download/v1.0.2/Dedsec-Monitor-1.0.2-Portable-x64.zip) · [Все релизы](https://github.com/Dedseckms/Dedsec-Monitor/releases)
 
 <p align="center">
-  <a href="docs/VALIDATION.md"><img alt="Тестовая версия" src="https://img.shields.io/badge/PREVIEW-1.0.2-C2F970?style=for-the-badge&labelColor=181D18&color=C2F970"></a>
+  <a href="https://github.com/Dedseckms/Dedsec-Monitor/releases/tag/v1.0.2"><img alt="Версия 1.0.2" src="https://img.shields.io/badge/RELEASE-1.0.2-C2F970?style=for-the-badge&labelColor=181D18&color=C2F970"></a>
   <img alt="Windows 10 / 11 x64" src="https://img.shields.io/badge/WINDOWS-10%20%2F%2011-8C9A89?style=for-the-badge&labelColor=181D18">
   <a href="LICENSE"><img alt="GPL 3.0 or later" src="https://img.shields.io/badge/OPEN_SOURCE-GPL_3.0-8C9A89?style=for-the-badge&labelColor=181D18"></a>
 </p>
@@ -24,14 +24,14 @@
 | Оверлей с пропуском кликов в игру | Запись CSV и история завершённых сессий |
 | Горячие клавиши без переключения окон | Трей, автозапуск и русский / английский интерфейс |
 
-**Настройка за минуту.** Датчики определяются автоматически. Выберите угол экрана, размер и нужные метрики — остальные изменения сохраняются сразу. Все компоненты включены в установщик, отдельная установка .NET и PresentMon не нужна.
+**Простая настройка.** Датчики определяются автоматически. Выберите угол экрана, размер и нужные метрики — остальные изменения сохраняются сразу. Установщик сам подготавливает компоненты; отдельная установка .NET и PresentMon не нужна. Для первоначальной подготовки игрового оверлея нужен интернет.
 
 ## Быстрый старт
 
-1. Для локальной проверки откройте `artifacts/Dedsec-Monitor-1.0.2-preview-Setup-x64.exe`. Публичный релиз появится после одобрения владельцем.
+1. Скачайте [установщик 1.0.2](https://github.com/Dedseckms/Dedsec-Monitor/releases/download/v1.0.2/Dedsec-Monitor-1.0.2-Setup-x64.exe) и откройте его. Оверлей и поддержка датчиков подготавливаются автоматически; подтвердите запросы Windows.
 2. Установите и запустите **Dedsec Monitor**. Для варианта без установки распакуйте **весь** Portable ZIP и откройте `Dedsec.Monitor.exe`.
 3. Если FPS или температура недоступны, откройте **Настройки → Перезапустить с полным доступом**. Windows запросит права администратора. Программа может работать и с обычными правами, с ограниченным набором показаний.
-4. Запустите игру в оконном или безрамочном режиме и переключитесь в неё. Автовыбор запомнит процесс игры. Источник FPS также можно выбрать вручную на странице обзора.
+4. Запустите игру после монитора и переключитесь в неё. Игровой оверлей использует RTSS, внешний — оконный/безрамочный режим. Автовыбор запомнит процесс игры. Источник FPS также можно выбрать вручную на странице обзора.
 5. На странице **Оверлей** включите панель. Нажимайте **Ctrl + Shift + O**, чтобы скрывать и показывать её во время игры.
 
 | Клавиша | Действие |

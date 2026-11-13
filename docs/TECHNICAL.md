@@ -1,6 +1,6 @@
 # Architecture and validation
 
-## Preview 1.0.1 changes
+## 1.0.2 changes
 
 The draggable custom caption uses WPF `WindowChrome`, explicit minimize/maximize/close controls, and an initial size constrained to the screen work area. This avoids placing the native title bar outside the usable desktop on scaled displays.
 
@@ -8,7 +8,7 @@ The draggable custom caption uses WPF `WindowChrome`, explicit minimize/maximize
 
 The renderer backend is automatic RTSS when connected, explicit RTSS, or the existing desktop window. Minecraft's Java process prefers RTSS readings when available. Game-specific protection can still reject the RTSS hook. The OpenGL test workload has demonstrated visible OSD pixels in its own framebuffer; it does not establish compatibility with Minecraft or every exclusive fullscreen game.
 
-`UpdateService` checks only the public repository's stable published latest-release API. Draft/prerelease/older versions and foreign download hosts are rejected. Verified ZIPs and a manifest-listed payload are staged below the local Updates directory. The separately bundled self-contained updater waits for the old process, preserves unrelated installation files, backs up replaced files, launches the replacement and waits for a startup acknowledgment. Failure rolls back and restarts the previous version with update checking skipped. Recording defers application until the next launch. Settings/recordings remain outside the installation. Automatic release publication is disabled pending user approval.
+`UpdateService` checks only the public repository's stable published latest-release API. Draft/prerelease/older versions and foreign download hosts are rejected. Verified ZIPs and a manifest-listed payload are staged below the local Updates directory. The separately bundled self-contained updater waits for the old process, preserves unrelated installation files, backs up replaced files, launches the replacement and waits for a startup acknowledgment. Failure rolls back and restarts the previous version with update checking skipped. Recording defers application until the next launch. Settings/recordings remain outside the installation. CI builds and tests packages; releases are published explicitly after owner approval.
 
 ## Components
 
