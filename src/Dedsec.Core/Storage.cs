@@ -45,7 +45,7 @@ public sealed class SessionRecorder : IDisposable
         Directory.CreateDirectory(folder);
         var path = Path.Combine(folder, $"Dedsec-{now:yyyyMMdd-HHmmss}-{Guid.NewGuid().ToString("N")[..6]}.csv");
         _writer = new StreamWriter(new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read), new UTF8Encoding(true));
-        _writer.WriteLine("Timestamp,ProcessId,Application,FPS,FrameTimeMs,Low1PercentFPS,CpuLoadPercent,CpuTemperatureC,CpuClockMHz,GpuLoadPercent,GpuTemperatureC,GpuClockMHz,VramUsedMB,GpuPowerW,RamUsedGB,RamTotalGB");
+        _writer.WriteLine("Timestamp,ProcessId,Application,FPS,FrameTimeMs,Low1PercentFPS,CpuLoadPercent,CpuTemperatureC,CpuClockMHz,GpuLoadPercent,GpuTemperatureC,GpuClockMHz,VramUsedMB,GpuPowerW,RamUsedGB,RamTotalGB,FpsSource");
         _writer.Flush();
         _fpsSum = 0; _fpsSamples = 0;
         Current = new(path, now, 0, 0, null, null, null, null);
@@ -59,7 +59,7 @@ public sealed class SessionRecorder : IDisposable
             Escape(sample.Frames.Application), N(sample.Frames.Fps), N(sample.Frames.FrameTime),
             N(sample.Frames.LowOnePercent), N(sample.CpuLoad), N(sample.CpuTemperature), N(sample.CpuClock),
             N(sample.GpuLoad), N(sample.GpuTemperature), N(sample.GpuClock), N(sample.GpuMemoryUsed),
-            N(sample.GpuPower), N(sample.MemoryUsed), N(sample.MemoryTotal)));
+            N(sample.GpuPower), N(sample.MemoryUsed), N(sample.MemoryTotal), Escape(sample.Frames.Source)));
         _writer.Flush();
         if (sample.Frames.Fps is { } fps) { _fpsSum += fps; _fpsSamples++; }
         static double? Max(double? a, double? b) => a is null ? b : b is null ? a : Math.Max(a.Value, b.Value);

@@ -2,8 +2,10 @@
   <Folder Name="/src/">
     <Project Path="src/Dedsec.Core/Dedsec.Core.csproj" />
     <Project Path="src/Dedsec.Monitor/Dedsec.Monitor.csproj" />
+    <Project Path="src/Dedsec.Updater/Dedsec.Updater.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Dedsec.Tests/Dedsec.Tests.csproj" />
+    <Project Path="tests/Dedsec.WindowsTests/Dedsec.WindowsTests.csproj" />
   </Folder>
 </Solution>

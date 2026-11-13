@@ -10,7 +10,7 @@
     <ApplicationIcon>Assets/dedsec.ico</ApplicationIcon>
     <Product>Dedsec Monitor</Product>
     <Description>Game performance. Under your control.</Description>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SatelliteResourceLanguages>en;ru</SatelliteResourceLanguages>
   </PropertyGroup>
   <ItemGroup>

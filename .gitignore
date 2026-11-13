@@ -9,3 +9,4 @@ vendor/*.zip
 .env
 TestResults/
 docs/screenshots/diagnostics.json
+docs/screenshots/overlay.ready

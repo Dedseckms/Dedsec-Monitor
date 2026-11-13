@@ -18,4 +18,4 @@ if ((Get-FileHash $driver -Algorithm SHA256).Hash.ToLowerInvariant() -ne '1f519a
     throw 'PawnIO installer checksum mismatch.'
 }
 if ((Get-AuthenticodeSignature $driver).Status -ne 'Valid') { throw 'PawnIO installer signature is invalid.' }
-Write-Output 'PawnIO 2.2.0 optional installer: SHA-256 and Authenticode verified.'
+Write-Output 'PawnIO 2.2.0 installer: SHA-256 and Authenticode verified.'
