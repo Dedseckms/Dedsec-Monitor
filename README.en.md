@@ -23,7 +23,7 @@ CPU/GPU load, temperature and clocks, RAM, VRAM and available power sensors are 
 
 - Windows 10 build 19041+ or Windows 11, x64. No Linux or ARM64 build in this release.
 - Two overlay backends are available: an RTSS in-game OSD and a transparent desktop window for borderless/windowed games. Driver behavior and anti-cheat policies may restrict either path. No promise of support for every game.
-- FPS is `1000 / mean frame time` in a rolling two-second window; 1% low is the reciprocal of the average slowest 1% of frame times. The busiest swap chain is selected. These are application Present rates, not display refresh rates.
+- PresentMon FPS is `1000 / mean frame time` in a rolling two-second window; 1% low is the reciprocal of the average slowest 1% of frame times. The busiest swap chain is selected. These are application Present rates, not display refresh rates. RTSS uses its own measurement interval and does not supply per-frame 1% low.
 - Sessions contain aggregated measurements at the configured 0.5–3 second polling interval, not every frame. Session average/minimum FPS summarize these measurements, not a per-frame benchmark.
 - Hardware sensor availability depends on the device, drivers and permissions. Low-level CPU sensor support is prepared automatically using the bundled signed PawnIO installer, with Windows permission prompts. Restore components in Settings can repair missing support. See [technical documentation](docs/TECHNICAL.md).
 - The initial binaries are unsigned. Verify downloads with the release's `SHA256SUMS.txt`.
